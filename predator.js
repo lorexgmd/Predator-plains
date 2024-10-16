@@ -24,4 +24,15 @@ function chooseRole() {
         chooseRole(); // Retry if invalid input
     }
 }
+// NPC object class
+class NPC {
+    constructor(type, startX, startY, playerSpeed, playerSize) {
+        this.type = type; // Carnivore or Herbivore
+        this.x = startX;
+        this.y = startY;
+        this.speed = playerSpeed; // Same speed as the player
+        this.size = playerSize; // Same size as the player
+        this.score = INITIAL_POINTS;
+    }
+}
 chooseRole ();
