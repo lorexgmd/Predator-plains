@@ -27,6 +27,16 @@ const npcSpeed = 1; // Snelheid van NPC's (verlaagd voor betere gameplay)
 let mouseX = player.x; // Beginpositie van de muis op de X-as
 let mouseY = player.y; // Beginpositie van de muis op de Y-as
 
+// Function to prompt player to choose role
+function chooseRole() {
+    const role = prompt("Choose your role: Carnivore or Herbivore");
+    if (role.toLowerCase() === "carnivore" || role.toLowerCase() === "herbivore") {
+        player.role = role;
+    } else {
+        chooseRole(); // Retry if invalid input
+    }
+}
+
 // Functie om voedsel te spawnen
 function spawnFood() {
     for (let i = 0; i < foodCount; i++) { // Voor elke voedsel item
@@ -176,6 +186,7 @@ function gameLoop() {
 
 // Functie om het spel te starten
 function startGame() {
+    chooseRole(); // ChooseRole
     spawnFood(); // Spawn voedsel items
     spawnNPCs(); // Spawn NPC's
     gameLoop(); // Start de spelcyclus
