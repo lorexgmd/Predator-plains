@@ -1,0 +1,6 @@
+/* Stijl voor de canvas */
+canvas {
+    border: 1px solid black; /* Zwarte rand om de canvas */
+    display: block; /* Weergave als blok */
+    margin: 0 auto; /* Centreren van de canvas op de pagina */
+}
