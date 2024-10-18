@@ -20,10 +20,10 @@ let npcs = []; // Array voor NPC's
 // Spelinstellingen
 const foodCount = 100; // Aantal voedsel dat gespawnd moet worden
 const npcCount = 10; // Aantal NPC's dat gespawnd moet worden
-const foodSize = 10; // Grootte van voedsel
+const foodSize = 10; // Grotte van food
 const npcSpeed = 1; // Snelheid van NPC's (verlaagd voor betere gameplay)
-const newNpcSize = 30;
-const newFoodSize = 10;
+const newNpcSize = 30; // Begin score van de NPC
+const newFoodSize = 10; // Grotte van nieuw food
 
 // Initialisatie van muispositie
 let mouseX = player.x; // Beginpositie van de muis op de X-as
