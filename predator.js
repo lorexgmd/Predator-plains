@@ -168,14 +168,6 @@ function checkNPCCollisions() {
                 }
             }, intervalTime);
         }
-function spawnNpcAgain(intervalTime){ // Controleer of het npcs minder is dan een bepaalde hoeveelheid
-    setInterval(function() {
-        if (npcs.length < npcCount) {
-            spawnNPCs();
-        }
-    }, intervalTime);
-}
-
 // Hoofdcodes voor de spelcyclus
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Wis het canvas
