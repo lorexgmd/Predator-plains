@@ -7,7 +7,7 @@ let player = {
     x: canvas.width / 2, // Beginpositie van de speler op de X-as (midden van het canvas)
     y: canvas.height / 2, // Beginpositie van de speler op de Y-as (midden van het canvas)
     size: 30, // Begin grootte van de speler
-    speed: 2, // Snelheid van de speler
+    speed: 1, // Snelheid van de speler
     score: 0, // Begin score van de speler
     role: null, // Rol van de speler (Carnivore of Herbivore)
     color: "blue" // Kleur van de speler
@@ -26,7 +26,6 @@ const npcSpeed = 1; // Snelheid van NPC's (verlaagd voor betere gameplay)
 // Initialisatie van muispositie
 let mouseX = player.x; // Beginpositie van de muis op de X-as
 let mouseY = player.y; // Beginpositie van de muis op de Y-as
-
 // Function to prompt player to choose role
 function chooseRole() {
     const role = prompt("Choose your role: Carnivore or Herbivore");
@@ -36,7 +35,6 @@ function chooseRole() {
         chooseRole(); // Retry if invalid input
     }
 }
-
 // Functie om voedsel te spawnen
 function spawnFood() {
     for (let i = 0; i < foodCount; i++) { // Voor elke voedsel item
@@ -119,11 +117,11 @@ function checkCollisions() {
         if (distance < player.size / 2 + food.size / 2) {
             // Absorbeer het voedsel
             player.score += (food.type === 'plant') ? 10 : 20; // Verhoog score op basis van voedseltype
-            player.size += 2; // Vergroot de speler een beetje
+            player.size += 1; // Vergroot de speler een beetje
             foodItems.splice(i, 1); // Verwijder voedsel uit de array
+
         }
     }
-
     // Botsing met NPC's
     for (let i = npcs.length - 1; i >= 0; i--) { // Loop achteruit om te kunnen verwijderen
         let npc = npcs[i]; // Huidige NPC
@@ -144,6 +142,39 @@ function checkCollisions() {
         }
     }
 }
+function checkNPCCollisions() {
+    npcs.forEach(npc => {
+        for (let i = foodItems.length - 1; i >= 0; i--) {
+            let food = foodItems[i];
+            let dx = npc.x - food.x;
+            let dy = npc.y - food.y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Controleer of er een botsing is
+            if (distance < npc.size / 2 + food.size / 2) {
+                // Controleer of het soort voedsel geschikt is voor de NPC {
+                    npc.score += (food.type === 'plant') ? 10 : 20;
+                    npc.size += 1; // Vergroot de npc een beetje
+                    foodItems.splice(i, 1); // Verwijder voedsel uit de array
+
+                }
+            }
+        }
+    )};
+    function spawnFoodAgain(intervalTime){
+            setInterval(function() {
+                if (foodItems.length < foodCount) { // Controleer of het voedsel minder is dan een bepaalde hoeveelheid
+                    spawnFood();
+                }
+            }, intervalTime);
+        }
+function spawnNpcAgain(intervalTime){ // Controleer of het npcs minder is dan een bepaalde hoeveelheid
+    setInterval(function() {
+        if (npcs.length < npcCount) {
+            spawnNPCs();
+        }
+    }, intervalTime);
+}
 
 // Hoofdcodes voor de spelcyclus
 function gameLoop() {
@@ -152,7 +183,6 @@ function gameLoop() {
     // Update posities van speler en NPC's
     updatePlayerPosition(); // Update de positie van de speler
     updateNPCs(); // Update de posities van de NPC's
-
     // Teken de speler
     ctx.fillStyle = player.color; // Kleur van de speler
     ctx.beginPath();
@@ -180,7 +210,7 @@ function gameLoop() {
 
     // Controleer op botsingen
     checkCollisions(); // Controleer botsingen met voedsel en NPC's
-
+    checkNPCCollisions(); // Controleer botsingen tussem Npc's en voedsel
     requestAnimationFrame(gameLoop); // Vraag de volgende frame aan
 }
 
@@ -189,8 +219,9 @@ function startGame() {
     chooseRole(); // ChooseRole
     spawnFood(); // Spawn voedsel items
     spawnNPCs(); // Spawn NPC's
+    spawnFoodAgain(5000);
+    spawnNpcAgain(1000)
     gameLoop(); // Start de spelcyclus
 }
-
 // Start het spel
 startGame();
