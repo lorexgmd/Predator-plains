@@ -74,6 +74,8 @@ function spawnNPCs() {
 function respawnNPC(x, y, delay) {
     setTimeout(function() {
         npcs.push({
+            x:Math.random() * canvas.width,
+            y:Math.random() * canvas.height,
             size: newNpcSize, // De initiële massa is dezelfde als die van de speler aan het begin
             speed: npcSpeed, // NPC-snelheid
             directionX: Math.random() > 0.5 ? 1 : -1, // Willekeurige X-richting
@@ -162,7 +164,7 @@ function checkCollisions() {
                 npcs.splice(i, 1); // NPC's verwijderen
 
                 // Respawnt een nieuwe NPC na 3 seconden op de plaats van degene die is opgegeten
-                respawnNPC (Math.random() * canvas.width, Math.random() * canvas.height, 3000);
+                respawnNPC (3000);
             } else { // Als de speler kleiner is
                 alert("Game Over"); // Einde van het spel
                 document.location.reload(); // Het spel opnieuw starten
@@ -184,7 +186,7 @@ function checkNPCCollisions() {
                     npc.score += (food.type === 'plant') ? 10 : 20;
                     npc.size += 1; // Vergroot de npc een beetje
                     foodItems.splice(i, 1); // Verwijder voedsel uit de array
-                respawnFood();
+                    respawnFood();
                 }
             }
         }
