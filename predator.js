@@ -224,4 +224,5 @@ function startGame() {
     gameLoop(); // Start de spelcyclus
 }
 // Start het spel
+// Start het spel
 startGame();
