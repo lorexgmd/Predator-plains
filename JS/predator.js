@@ -48,15 +48,17 @@ function spawnFood() {
         });
     }
 }
+// Functie om voedsel opnieuw te spawnen na een vertraging
 function respawnFood(x, y, delay) {
+    // Stel een timeout in om voedsel te spawnen na een bepaalde vertraging
     setTimeout(function() {
         foodItems.push({
-            x: Math.random() * canvas.width, 
-            y: Math.random() * canvas.height, 
-            size: newFoodSize, // 
-            type: Math.random() > 0.5 ? 'plant' : 'meat' // Willekeurig type voedsel: plant of vlees
+            x: Math.random() * canvas.width, // Willekeurige X-positie binnen het canvas
+            y: Math.random() * canvas.height, // Willekeurige Y-positie binnen het canvas
+            size: newFoodSize, // Grootte van het nieuwe voedselitem
+            type: Math.random() > 0.5 ? 'plant' : 'meat' // Willekeurig type voedsel: plant (50%) of vlees (50%)
         });
-    }, delay); // Respawn na een bepaald aantal milliseconden
+    }, delay); // Wacht een opgegeven aantal milliseconden voordat het voedsel wordt gespawned
 }
 // Functie om NPC's te spawnen
 function spawnNPCs() {
@@ -71,7 +73,7 @@ function spawnNPCs() {
         });
     }
 }
-function respawnNPC(x, y, delay) {
+function respawnNPC(x, y, delay) { // Functie om NPC's te respawnen als ze dood zijn
     setTimeout(function() {
         npcs.push({
             x:Math.random() * canvas.width,
@@ -172,32 +174,35 @@ function checkCollisions() {
         }
     }
 }
+// Functie om botsingen van NPC's met voedsel te controleren
 function checkNPCCollisions() {
-    npcs.forEach(npc => {
-        for (let i = foodItems.length - 1; i >= 0; i--) {
-            let food = foodItems[i];
-            let dx = npc.x - food.x;
-            let dy = npc.y - food.y;
-            let distance = Math.sqrt(dx * dx + dy * dy);
+    npcs.forEach(npc => { // Voor elke NPC
+        for (let i = foodItems.length - 1; i >= 0; i--) { // Loop door alle voedsel items (achteruit om veilig te kunnen verwijderen)
+            let food = foodItems[i]; // Huidig voedsel item
+            let dx = npc.x - food.x; // Verschil op de X-as tussen NPC en voedsel
+            let dy = npc.y - food.y; // Verschil op de Y-as tussen NPC en voedsel
+            let distance = Math.sqrt(dx * dx + dy * dy); // Bereken afstand tussen NPC en voedsel
 
-            // Controleer of er een botsing is
+            // Controleer of er een botsing is tussen NPC en voedsel
             if (distance < npc.size / 2 + food.size / 2) {
-                // Controleer of het soort voedsel geschikt is voor de NPC {
-                    npc.score += (food.type === 'plant') ? 10 : 20;
-                    npc.size += 1; // Vergroot de npc een beetje
-                    foodItems.splice(i, 1); // Verwijder voedsel uit de array
-                    respawnFood();
-                }
+                // Controleer of het voedseltype geschikt is voor de NPC (bijvoorbeeld planten voor herbivoren)
+                npc.score += (food.type === 'plant') ? 10 : 20; // Verhoog de score van de NPC afhankelijk van het voedseltype
+                npc.size += 1; // Vergroot de NPC een beetje
+                foodItems.splice(i, 1); // Verwijder het voedsel uit de array
+                respawnFood(); // Respawn het voedsel na een korte vertraging
             }
         }
-    )};
-    function spawnFoodAgain(intervalTime){
-            setInterval(function() {
-                if (foodItems.length < foodCount) { // Controleer of het voedsel minder is dan een bepaalde hoeveelheid
-                    respawnFood();
-                }
-            }, intervalTime);
+    });
+}
+
+// Functie om voedsel automatisch opnieuw te spawnen als het aantal onder een bepaalde limiet komt
+function spawnFoodAgain(intervalTime) {
+    setInterval(function() {
+        if (foodItems.length < foodCount) { // Controleer of er minder voedsel is dan de ingestelde limiet
+            respawnFood(); // Respawn nieuw voedsel
         }
+    }, intervalTime); // Interval tijd in milliseconden tussen elke controle
+}
 // Hoofdcodes voor de spelcyclus
 function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Wis het canvas
