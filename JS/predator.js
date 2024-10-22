@@ -227,6 +227,7 @@ if (distance < npc.size / 2 + food.size / 2) {
     });
 }
 
+
 // Functie om voedsel automatisch opnieuw te spawnen als het aantal onder een bepaalde limiet komt
 function spawnFoodAgain(intervalTime) {
     setInterval(function() {
