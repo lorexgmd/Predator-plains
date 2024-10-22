@@ -140,7 +140,7 @@ canvas.addEventListener("mousemove", function(event) {
     mouseX = event.clientX - rect.left; // Update muispositie op de X-as
     mouseY = event.clientY - rect.top; // Update muispositie op de Y-as
 });
-// test
+
 function checkCollisions() {
     // Loop achteruit om veilig te kunnen verwijderen
     for (let i = foodItems.length - 1; i >= 0; i--) {
@@ -288,3 +288,4 @@ function startGame() {
 }
 // Start het spel
 startGame();
+//test
