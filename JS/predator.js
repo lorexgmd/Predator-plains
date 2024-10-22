@@ -140,7 +140,7 @@ canvas.addEventListener("mousemove", function(event) {
     mouseX = event.clientX - rect.left; // Update muispositie op de X-as
     mouseY = event.clientY - rect.top; // Update muispositie op de Y-as
 });
-
+// test
 function checkCollisions() {
     // Loop achteruit om veilig te kunnen verwijderen
     for (let i = foodItems.length - 1; i >= 0; i--) {
@@ -273,7 +273,6 @@ function gameLoop() {
     checkNPCCollisions(); // Controleer botsingen tussem Npc's en voedsel
     requestAnimationFrame(gameLoop); // Vraag de volgende frame aan
 }
-
 // Functie om het spel te starten
 function startGame() {
     playBackgroundMusic(); // Background music
