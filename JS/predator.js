@@ -241,9 +241,13 @@ function spawnFoodAgain(intervalTime) {
         }
     }, intervalTime); // Interval tijd in milliseconden tussen elke controle
 }
+// Load the background image
+const backgroundImage = new Image();
+backgroundImage.src = "/Images/Savannah background.jpg"; // Path to your background image
+
 // Hoofdcodes voor de spelcyclus
 function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Wis het canvas
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);//voeg background image toe   
 
     // Update posities van speler en NPC's
     updatePlayerPosition(); // Update de positie van de speler
@@ -266,7 +270,7 @@ function gameLoop() {
 
     // Teken NPC's
     npcs.forEach(npc => { // Voor elke NPC
-        ctx.fillStyle = 'orange'; // Kleur van NPC's
+        ctx.fillStyle = 'black'; // Kleur van NPC's
         ctx.beginPath();
         ctx.arc(npc.x, npc.y, npc.size / 2, 0, Math.PI * 2); // Teken de NPC
         ctx.fill(); // Vul de NPC
