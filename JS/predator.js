@@ -197,7 +197,12 @@ function checkCollisions() {
 
                 // Respawnt een nieuwe NPC na 3 seconden op de plaats van degene die is opgegeten
                 respawnNPC (3000);
-            } else { // Als de speler kleiner is
+            } 
+            else if (player.size === npc.size) {
+         
+             // Deze regel verhelpt deze bug: NPC's kunnen aan het begin van het spel in de speler spawnen, waardoor je onmiddellijk verliest.
+            }
+            else { // Als de speler kleiner is
                 gameOverSound.play();
                 alert("Game Over"); // Einde van het spel
                 document.location.reload(); // Het spel opnieuw starten
