@@ -69,7 +69,8 @@ function spawnNPCs() {
             size: player.size, // Grootte van de NPC gelijk aan de speler
             speed: npcSpeed, // Snelheid van de NPC
             directionX: Math.random() > 0.5 ? 1 : -1, // Willekeurige richting op de X-as
-            directionY: Math.random() > 0.5 ? 1 : -1 // Willekeurige richting op de Y-as
+            directionY: Math.random() > 0.5 ? 1 : -1, // Willekeurige richting op de Y-as
+            type: Math.random() > 0.5 ? 'carnivore' : 'herbivore' // Willekeurig type
         });
     }
 }
@@ -81,7 +82,8 @@ function respawnNPC(x, y, delay) { // Functie om NPC's te respawnen als ze dood 
             size: newNpcSize, // De initiële massa is dezelfde als die van de speler aan het begin
             speed: npcSpeed, // NPC-snelheid
             directionX: Math.random() > 0.5 ? 1 : -1, // Willekeurige X-richting
-            directionY: Math.random() > 0.5 ? 1 : -1  // Willekeurige Y-richting
+            directionY: Math.random() > 0.5 ? 1 : -1,  // Willekeurige Y-richting
+            type: Math.random() > 0.5 ? 'carnivore' : 'herbivore' // Willekeurig type
         });
     }, delay); // Respawn na een bepaald aantal milliseconden
 }
@@ -129,23 +131,39 @@ canvas.addEventListener("mousemove", function(event) {
     mouseY = event.clientY - rect.top; // Update muispositie op de Y-as
 });
 
-// Functie voor het controleren van botsingen tussen speler en NPC's
 function checkCollisions() {
-    // Botsing met voedsel
-    for (let i = foodItems.length - 1; i >= 0; i--) { // Loop achteruit om te kunnen verwijderen
+    // Loop achteruit om veilig te kunnen verwijderen
+    for (let i = foodItems.length - 1; i >= 0; i--) {
         let food = foodItems[i]; // Huidig voedsel item
-        let dx = player.x - food.x; // Verschil op de X-as
-        let dy = player.y - food.y; // Verschil op de Y-as
+        let dx = player.x - food.x; // Verschil op de X-as tussen speler en voedsel
+        let dy = player.y - food.y; // Verschil op de Y-as tussen speler en voedsel
         let distance = Math.sqrt(dx * dx + dy * dy); // Bereken afstand tussen speler en voedsel
 
         // Controleer of er een botsing is
         if (distance < player.size / 2 + food.size / 2) {
-            // Absorbeer het voedsel
-            player.score += (food.type === 'plant') ? 10 : 20; // Verhoog score op basis van voedseltype
-            player.size += 1; // Vergroot de speler een beetje
-            foodItems.splice(i, 1); // Verwijder voedsel uit de array
-            //
-            respawnFood();
+            // Als de speler een herbivoor is en het voedsel vlees is
+            if (player.role === 'herbivore' && food.type === 'meat') {
+                player.score -= 1; // Trawiajder verliest 1 punt voor het eten van vlees
+            } 
+            // Controleer of de speler een carnivoor is
+            else if (player.role === 'carnivore') {
+                // Als het voedsel een plant is
+                if (food.type === 'plant') {
+                    player.score -= 1; // Carnivoor verliest 1 punt voor het eten van een plant
+                } 
+                // Als het voedsel vlees is
+                else if (food.type === 'meat') {
+                    player.score += 1; // Carnivoor krijgt 1 punt voor het eten van vlees
+                }
+            } 
+            // Anders, als de speler geen carnivoor of herbivoor is
+            else {
+                // Verhoog de score op basis van het voedseltype
+                player.score += (food.type === 'plant') ? 20 : 20; // 10 punten voor planten, 20 voor vlees
+                player.size += 1; // Vergroot de speler met 1
+            }
+            foodItems.splice(i, 1); // Verwijder het gegeten voedsel uit de array
+            respawnFood(); // Roep de functie aan om nieuw voedsel te laten verschijnen
         }
     }
     // Botsing met NPC
@@ -183,13 +201,14 @@ function checkNPCCollisions() {
             let dy = npc.y - food.y; // Verschil op de Y-as tussen NPC en voedsel
             let distance = Math.sqrt(dx * dx + dy * dy); // Bereken afstand tussen NPC en voedsel
 
-            // Controleer of er een botsing is tussen NPC en voedsel
-            if (distance < npc.size / 2 + food.size / 2) {
-                // Controleer of het voedseltype geschikt is voor de NPC (bijvoorbeeld planten voor herbivoren)
-                npc.score += (food.type === 'plant') ? 10 : 20; // Verhoog de score van de NPC afhankelijk van het voedseltype
-                npc.size += 1; // Vergroot de NPC een beetje
-                foodItems.splice(i, 1); // Verwijder het voedsel uit de array
-                respawnFood(); // Respawn het voedsel na een korte vertraging
+
+// Controleer of er een botsing is tussen NPC en voedsel
+if (distance < npc.size / 2 + food.size / 2) {
+    // Controleer of het voedseltype geschikt is voor de NPC (bijvoorbeeld planten voor herbivoren)
+    npc.score += (food.type === 'plant') ? 20 : 20; // Verhoog de score van de NPC afhankelijk van het voedseltype
+    npc.size += 1; // Vergroot de NPC een beetje
+    foodItems.splice(i, 1); // Verwijder het voedsel uit de array
+    respawnFood(); // Respawn het voedsel na een korte vertraging
             }
         }
     });
