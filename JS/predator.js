@@ -1,6 +1,9 @@
 // Hoofdvariabelen
 const canvas = document.getElementById("gameCanvas"); // Verkrijg het canvas element van de HTML
 const ctx = canvas.getContext("2d"); // Verkrijg de 2D context voor tekenen op het canvas
+const backgroundMusic = new Audio("GitHub/Predator-plains/mp3/Background-music.mp3"); // De pad naar de achtergrondmuziek.
+const eatSound = new Audio('GitHub/Predator-plains/mp3/eat-sound.mp3'); // De pad naar het geluid van het eten.
+const gameOverSound = new Audio('GitHub/Predator-plains/mp3/game-over.mp3'); // De pad naar het geluid van het einde van het spel.
 
 // Speler
 let player = {
@@ -28,6 +31,13 @@ const newFoodSize = 10; // Grotte van nieuw food
 // Initialisatie van muispositie
 let mouseX = player.x; // Beginpositie van de muis op de X-as
 let mouseY = player.y; // Beginpositie van de muis op de Y-as
+// Functie voor het afspelen van achtergrondmuziek.
+function playBackgroundMusic() {
+    backgroundMusic.loop = true; // Het herhalen van de muziek.
+    backgroundMusic.play().catch(error => {
+        console.error("Fout bij het afspelen van muziek:", error);; // Het afspelen van muziek.
+});
+}
 // Function to prompt player to choose role
 function chooseRole() {
     const role = prompt("Choose your role: Carnivore or Herbivore");
@@ -161,6 +171,8 @@ function checkCollisions() {
                 // Verhoog de score op basis van het voedseltype
                 player.score += (food.type === 'plant') ? 20 : 20; // 10 punten voor planten, 20 voor vlees
                 player.size += 1; // Vergroot de speler met 1
+                eatSound.currentTime = 0; // De afspeeltijd resetten.
+                eatSound.play(); // Het afspelen van het geluid van het eten.
             }
             foodItems.splice(i, 1); // Verwijder het gegeten voedsel uit de array
             respawnFood(); // Roep de functie aan om nieuw voedsel te laten verschijnen
@@ -186,6 +198,7 @@ function checkCollisions() {
                 // Respawnt een nieuwe NPC na 3 seconden op de plaats van degene die is opgegeten
                 respawnNPC (3000);
             } else { // Als de speler kleiner is
+                gameOverSound.play();
                 alert("Game Over"); // Einde van het spel
                 document.location.reload(); // Het spel opnieuw starten
             }
@@ -262,6 +275,7 @@ function gameLoop() {
 
 // Functie om het spel te starten
 function startGame() {
+    playBackgroundMusic(); // Background music
     chooseRole(); // ChooseRole
     spawnFood(); // Spawn voedsel items
     spawnNPCs(); // Spawn NPC's;
