@@ -1,10 +1,6 @@
 // Hoofdvariabelen
 const canvas = document.getElementById("gameCanvas"); // Verkrijg het canvas element van de HTML
 const ctx = canvas.getContext("2d"); // Verkrijg de 2D context voor tekenen op het canvas
-const backgroundMusic = new Audio("GitHub/Predator-plains/mp3/Background-music.mp3"); // De pad naar de achtergrondmuziek.
-const eatSound = new Audio('GitHub/Predator-plains/mp3/eat-sound.mp3'); // De pad naar het geluid van het eten.
-const gameOverSound = new Audio('GitHub/Predator-plains/mp3/game-over.mp3'); // De pad naar het geluid van het einde van het spel.
-
 // Speler
 let player = {
     x: canvas.width / 2, // Beginpositie van de speler op de X-as (midden van het canvas)
@@ -31,13 +27,7 @@ const newFoodSize = 10; // Grotte van nieuw food
 // Initialisatie van muispositie
 let mouseX = player.x; // Beginpositie van de muis op de X-as
 let mouseY = player.y; // Beginpositie van de muis op de Y-as
-// Functie voor het afspelen van achtergrondmuziek.
-function playBackgroundMusic() {
-    backgroundMusic.loop = true; // Het herhalen van de muziek.
-    backgroundMusic.play().catch(error => {
-        console.error("Fout bij het afspelen van muziek:", error);; // Het afspelen van muziek.
-});
-}
+
 // Function to prompt player to choose role
 function chooseRole() {
     const role = prompt("Choose your role: Carnivore or Herbivore");
@@ -142,40 +132,21 @@ canvas.addEventListener("mousemove", function(event) {
 });
 
 function checkCollisions() {
-    // Loop achteruit om veilig te kunnen verwijderen
-    for (let i = foodItems.length - 1; i >= 0; i--) {
+    // Botsing met voedsel
+    for (let i = foodItems.length - 1; i >= 0; i--) { // Loop achteruit om te kunnen verwijderen
         let food = foodItems[i]; // Huidig voedsel item
-        let dx = player.x - food.x; // Verschil op de X-as tussen speler en voedsel
-        let dy = player.y - food.y; // Verschil op de Y-as tussen speler en voedsel
+        let dx = player.x - food.x; // Verschil op de X-as
+        let dy = player.y - food.y; // Verschil op de Y-as
         let distance = Math.sqrt(dx * dx + dy * dy); // Bereken afstand tussen speler en voedsel
 
         // Controleer of er een botsing is
         if (distance < player.size / 2 + food.size / 2) {
-            // Als de speler een herbivoor is en het voedsel vlees is
-            if (player.role === 'herbivore' && food.type === 'meat') {
-                player.score -= 1; // Trawiajder verliest 1 punt voor het eten van vlees
-            } 
-            // Controleer of de speler een carnivoor is
-            else if (player.role === 'carnivore') {
-                // Als het voedsel een plant is
-                if (food.type === 'plant') {
-                    player.score -= 1; // Carnivoor verliest 1 punt voor het eten van een plant
-                } 
-                // Als het voedsel vlees is
-                else if (food.type === 'meat') {
-                    player.score += 1; // Carnivoor krijgt 1 punt voor het eten van vlees
-                }
-            } 
-            // Anders, als de speler geen carnivoor of herbivoor is
-            else {
-                // Verhoog de score op basis van het voedseltype
-                player.score += (food.type === 'plant') ? 20 : 20; // 10 punten voor planten, 20 voor vlees
-                player.size += 1; // Vergroot de speler met 1
-                eatSound.currentTime = 0; // De afspeeltijd resetten.
-                eatSound.play(); // Het afspelen van het geluid van het eten.
-            }
-            foodItems.splice(i, 1); // Verwijder het gegeten voedsel uit de array
-            respawnFood(); // Roep de functie aan om nieuw voedsel te laten verschijnen
+            // Absorbeer het voedsel
+            player.score += (food.type === 'plant') ? 10 : 20; // Verhoog score op basis van voedseltype
+            player.size += 1; // Vergroot de speler een beetje
+            foodItems.splice(i, 1); // Verwijder voedsel uit de array
+            //
+            respawnFood();
         }
     }
     // Botsing met NPC
@@ -199,11 +170,10 @@ function checkCollisions() {
                 respawnNPC (3000);
             } 
             else if (player.size === npc.size) {
-         
-             // Deze regel verhelpt deze bug: NPC's kunnen aan het begin van het spel in de speler spawnen, waardoor je onmiddellijk verliest.
-            }
+                console.log("De speler en NPC zijn gelijk in grootte.");
+                // Deze regel verhelpt deze bug: NPC's kunnen aan het begin van het spel in de speler spawnen, waardoor je onmiddellijk verliest.
+               }
             else { // Als de speler kleiner is
-                gameOverSound.play();
                 alert("Game Over"); // Einde van het spel
                 document.location.reload(); // Het spel opnieuw starten
             }
@@ -284,7 +254,6 @@ function gameLoop() {
 }
 // Functie om het spel te starten
 function startGame() {
-    playBackgroundMusic(); // Background music
     chooseRole(); // ChooseRole
     spawnFood(); // Spawn voedsel items
     spawnNPCs(); // Spawn NPC's;
@@ -292,4 +261,3 @@ function startGame() {
 }
 // Start het spel
 startGame();
-//test
