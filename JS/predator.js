@@ -39,20 +39,20 @@ function chooseRole() {
     gameLoop(); // Start game loop
 
 }
-// Installeer gebeurtenishandlers voor knoppen
+// Установим обработчики событий для кнопок
 document.getElementById('carnivoreButton').addEventListener('click', function() {
-    player.role = 'carnivore'; // Laten we de rol van Carnivoor instellen
-    player.color = 'red'; // De spelerkleur voor Carnivore veranderen
-    chooseRole(); // Laten we het spel starten
+    player.role = 'carnivore'; // Установим роль как Carnivore
+    player.color = 'red'; // Меняем цвет игрока для Carnivore
+    chooseRole(); // Запускаем игру
 });
 
 document.getElementById('herbivoreButton').addEventListener('click', function() {
-    player.role = 'herbivore'; // Laten we de rol van Herbivore instellen
-    player.color = 'green'; // De spelerkleur voor Herbivore veranderen
-    chooseRole(); //  Laten we het spel starten
+    player.role = 'herbivore'; // Установим роль как Herbivore
+    player.color = 'green'; // Меняем цвет игрока для Herbivore
+    chooseRole(); // Запускаем игру
 });
 function showRoleSelection() {
-    document.getElementById('roleSelection').style.display = 'block'; // Een blok tonen met rolselectie
+    document.getElementById('roleSelection').style.display = 'block'; // Показываем блок с выбором роли
 }
 
 // Functie om voedsel te spawnen
@@ -105,12 +105,12 @@ function respawnNPC(x, y, delay) { // Functie om NPC's te respawnen als ze dood 
         });
     }, delay); // Respawn na een bepaald aantal milliseconden
 }
-// Evolutiesysteem voor de speler
+// Система эволюции для игрока
 function checkEvolution() {
-    if (player.role === 'carnivore') { //Als de speler een roofdier is
+    if (player.role === 'carnivore') { // Если игрок хищник
         if (player.score >= 100 && player.score < 200) {
-            player.size = 50; // Evolutie: toenemende omvang
-            player.color = 'darkred'; // Kleur veranderen voor visualisatie
+            player.size = 50; // Эволюция: увеличиваем размер
+            player.color = 'darkred'; // Меняем цвет для визуализации
         } else if (player.score >= 200 && player.score < 300) {
             player.size = 70;
             player.color = 'brown';
@@ -118,10 +118,10 @@ function checkEvolution() {
             player.size = 100;
             player.color = 'black';
         }
-    } else if (player.role === 'herbivore') { // Als de speler een herbivoor is
+    } else if (player.role === 'herbivore') { // Если игрок травоядный
         if (player.score >= 100 && player.score < 200) {
-            player.size = 40; //Evolutie: toenemende omvang
-            player.color = 'darkgreen'; // Kleur veranderen voor visualisatie
+            player.size = 40; // Эволюция: увеличиваем размер
+            player.color = 'darkgreen'; // Меняем цвет для визуализации
         } else if (player.score >= 200 && player.score < 300) {
             player.size = 55;
             player.color = 'olive';
@@ -195,23 +195,9 @@ function gameOver() {
     gameOverSound.play().catch(error => {
         console.error("Error playing game over sound:", error);
     });
+
     alert("Game Over! Your score was: " + player.score);
-    restartGame();
-}
-// Function to reset the game
-function resetGame() {
-    player = { // Reset player properties
-        x: canvas.width / 2,
-        y: canvas.height / 2,
-        size: 30,
-        speed: 5,
-        score: 0,
-        role: null,
-        color: "blue"
-    };
-    foodItems = [];
-    npcs = [];
-    chooseRole(); // Prompt for role again
+    resetGame();
 }
 function checkCollisions() {
     // Botsing met voedsel
