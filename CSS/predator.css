@@ -3,3 +3,16 @@ canvas {
     display: block;
     margin: 0 auto;
 }
+#roleSelection {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+#roleSelection button {
+    padding: 10px 20px;
+    font-size: 18px;
+    margin: 10px;
+}

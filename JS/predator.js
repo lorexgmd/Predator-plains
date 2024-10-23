@@ -27,15 +27,35 @@ const newFoodSize = 10; // Grotte van nieuw food
 // Initialisatie van muispositie
 let mouseX = player.x; // Beginpositie van de muis op de X-as
 let mouseY = player.y; // Beginpositie van de muis op de Y-as
-
+// Functie voor het afspelen van achtergrondmuziek.
+function playBackgroundMusic() {
+    const audio = document.getElementById('background-music');
+    audio.play().catch(error => {
+        console.error("Fout bij het afspelen van muziek:", error);; // Het afspelen van muziek.
+});
+}
 // Function to prompt player to choose role
 function chooseRole() {
-    const role = prompt("Choose your role: Carnivore or Herbivore");
-    if (role.toLowerCase() === "carnivore" || role.toLowerCase() === "herbivore") {
-        player.role = role;
-    } else {
-        chooseRole(); // Retry if invalid input
-    }
+    document.getElementById('roleSelection').style.display = 'none'; // Скрыть блок с кнопками после выбора
+    playBackgroundMusic();
+    spawnFood(); // Спавним еду
+    spawnNPCs(); // Спавним NPC
+    gameLoop(); // Запускаем игровой цикл
+}
+// Установим обработчики событий для кнопок
+document.getElementById('carnivoreButton').addEventListener('click', function() {
+    player.role = 'carnivore'; // Установим роль как Carnivore
+    player.color = 'red'; // Меняем цвет игрока для Carnivore
+    chooseRole(); // Запускаем игру
+});
+
+document.getElementById('herbivoreButton').addEventListener('click', function() {
+    player.role = 'herbivore'; // Установим роль как Herbivore
+    player.color = 'green'; // Меняем цвет игрока для Herbivore
+    chooseRole(); // Запускаем игру
+});
+function showRoleSelection() {
+    document.getElementById('roleSelection').style.display = 'block'; // Показываем блок с выбором роли
 }
 // Functie om voedsel te spawnen
 function spawnFood() {
@@ -211,9 +231,13 @@ function spawnFoodAgain(intervalTime) {
         }
     }, intervalTime); // Interval tijd in milliseconden tussen elke controle
 }
+// Load the background image
+const backgroundImage = new Image();
+backgroundImage.src = "/Images/Savannah background.jpg"; // Path to your background image
+
 // Hoofdcodes voor de spelcyclus
 function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Wis het canvas
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);//voeg background image toe   
 
     // Update posities van speler en NPC's
     updatePlayerPosition(); // Update de positie van de speler
@@ -236,7 +260,7 @@ function gameLoop() {
 
     // Teken NPC's
     npcs.forEach(npc => { // Voor elke NPC
-        ctx.fillStyle = 'orange'; // Kleur van NPC's
+        ctx.fillStyle = 'black'; // Kleur van NPC's
         ctx.beginPath();
         ctx.arc(npc.x, npc.y, npc.size / 2, 0, Math.PI * 2); // Teken de NPC
         ctx.fill(); // Vul de NPC
@@ -250,10 +274,7 @@ function gameLoop() {
 }
 // Functie om het spel te starten
 function startGame() {
-    chooseRole(); // ChooseRole
-    spawnFood(); // Spawn voedsel items
-    spawnNPCs(); // Spawn NPC's;
-    gameLoop(); // Start de spelcyclus
+    showRoleSelection();
 }
 // Start het spel
 startGame();
