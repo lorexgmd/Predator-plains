@@ -1,38 +1,7 @@
-// Глобальные переменные
-const canvas = document.getElementById("gameCanvas"); // Получение элемента canvas
-const ctx = canvas.getContext("2d"); // Получение 2D контекста
-
-// Изображения животных (плотоядные и травоядные)
-const carnivoreImages = [
-    "Images/Wild cat(C1).png",
-    "Images/Jackal (C2).png",
-    "Images/Serval (C3).png",
-    "Images/Side Striped Jackal (C4).png",
-    "Images/Caracal (C5).png",
-    "Images/Striped Hyena (C6).png",
-    "Images/Spotted Hyena (C7).png",
-    "Images/Cheetah (C8).png",
-    "Images/Leopard (C9).png",
-    "Images/Tiger (C10).png",
-    "Images/Lion (C11).png"
-];
-
-const herbivoreImages = [
-    "Images/Herbivores/Beetle (H0).png",
-    "Images/Herbivores/African Hare (H1).png",
-    "Images/Herbivores/Springbok (H2).png",
-    "Images/Herbivores/SteenBok (H3).png",
-    "Images/Herbivores/Warthog (H4).png",
-    "Images/Herbivores/dik-dik (H5).png",
-    "Images/Herbivores/BushBuck (H6).png",
-    "Images/Herbivores/Zebra (H7).png",
-    "Images/Herbivores/Wildebeest (H8).png",
-    "Images/Herbivores/Giraffe (H9).png",
-    "Images/Herbivores/Elephant (H10).png"
-];
-
-// Игрок
-let playerImage = new Image(); // Инициализация изображения игрока
+// Hoofdvariabelen
+const canvas = document.getElementById("gameCanvas"); // Verkrijg het canvas element van de HTML
+const ctx = canvas.getContext("2d"); // Verkrijg de 2D context voor tekenen op het canvas
+// Speler
 let player = {
     x: canvas.width / 2, // Начальная позиция игрока по X
     y: canvas.height / 2, // Начальная позиция игрока по Y
@@ -95,8 +64,18 @@ function chooseRole() {
     spawnNPCs(); // Спавн NPC
     gameLoop(); // Запуск игрового цикла
 }
+// Установим обработчики событий для кнопок
+document.getElementById('carnivoreButton').addEventListener('click', function() {
+    player.role = 'carnivore'; // Установим роль как Carnivore
+    player.color = 'red'; // Меняем цвет игрока для Carnivore
+    chooseRole(); // Запускаем игру
+});
 
-// Функция отображения выбора роли
+document.getElementById('herbivoreButton').addEventListener('click', function() {
+    player.role = 'herbivore'; // Установим роль как Herbivore
+    player.color = 'green'; // Меняем цвет игрока для Herbivore
+    chooseRole(); // Запускаем игру
+});
 function showRoleSelection() {
     document.getElementById('roleSelection').style.display = 'block'; // Показать выбор роли
 }
@@ -112,14 +91,15 @@ function spawnFood() {
         });
     }
 }
-
-function respawnFood(x = Math.random() * canvas.width, y = Math.random() * canvas.height, delay = 3000) {
+// Functie om voedsel opnieuw te spawnen na een vertraging
+function respawnFood(x, y, delay) {
+    // Stel een timeout in om voedsel te spawnen na een bepaalde vertraging
     setTimeout(function() {
         foodItems.push({
-            x: x,
-            y: y,
-            size: newFoodSize,
-            type: Math.random() > 0.5 ? 'plant' : 'meat'
+            x: Math.random() * canvas.width, // Willekeurige X-positie binnen het canvas
+            y: Math.random() * canvas.height, // Willekeurige Y-positie binnen het canvas
+            size: newFoodSize, // Grootte van het nieuwe voedselitem
+            type: Math.random() > 0.5 ? 'plant' : 'meat' // Willekeurig type voedsel: plant (50%) of vlees (50%)
         });
     }, delay); 
 }
@@ -137,17 +117,16 @@ function spawnNPCs() {
         });
     }
 }
-
-function respawnNPC(x = Math.random() * canvas.width, y = Math.random() * canvas.height, delay = 3000) {
+function respawnNPC(x, y, delay) { // Functie om NPC's te respawnen als ze dood zijn
     setTimeout(function() {
         npcs.push({
-            x: x,
-            y: y,
-            size: newNpcSize,
-            speed: npcSpeed,
-            directionX: Math.random() > 0.5 ? 1 : -1,
-            directionY: Math.random() > 0.5 ? 1 : -1,
-            type: Math.random() > 0.5 ? 'carnivore' : 'herbivore'
+            x:Math.random() * canvas.width,
+            y:Math.random() * canvas.height,
+            size: newNpcSize, // De initiële massa is dezelfde als die van de speler aan het begin
+            speed: npcSpeed, // NPC-snelheid
+            directionX: Math.random() > 0.5 ? 1 : -1, // Willekeurige X-richting
+            directionY: Math.random() > 0.5 ? 1 : -1,  // Willekeurige Y-richting
+            type: Math.random() > 0.5 ? 'carnivore' : 'herbivore' // Willekeurig type
         });
     }, delay);
 }
@@ -203,34 +182,84 @@ function checkCollisions() {
             respawnFood();
         }
     }
+    // Botsing met NPC
+    for (let i = npcs.length - 1; i >= 0; i--) { // We doorlopen de NPC's in omgekeerde volgorde
+        let npc = npcs[i]; // Huidige NPC
+        let dx = player.x - npc.x; // X-verschil
+        let dy = player.y - npc.y; // Y-verschil
+        let distance = Math.sqrt(dx * dx + dy * dy); // Afstand tussen speler en NPC
 
-    // Коллизия с NPC
-    for (let i = npcs.length - 1; i >= 0; i--) {
-        let npc = npcs[i];
-        let dx = player.x - npc.x;
-        let dy = player.y - npc.y;
-        let distance = Math.sqrt(dx * dx + dy * dy);
+        // Controleer of er een botsing is
         if (distance < player.size / 2 + npc.size / 2) {
-            if (npc.type === 'herbivore' && player.role === 'carnivore') {
-                player.score += 20; // За поедание NPC
-                npcs.splice(i, 1);
-                respawnNPC();
-            } else if (npc.type === 'carnivore' && player.role === 'herbivore') {
-                alert("Game Over! You were eaten!"); // Игра окончена
-                document.location.reload(); // Перезагрузить игру
+            if (player.size > npc.size) { // Als de speler meer is
+                player.score += 50; // Punten verhogen
+                player.size += 5; // Het vergroten van de spelersgrootte
+                let npcX = npc.x; // Bewaar de coördinaten van de opgegeten NPC
+                let npcY = npc.y;
+
+                npcs.splice(i, 1); // NPC's verwijderen
+
+                // Respawnt een nieuwe NPC na 3 seconden op de plaats van degene die is opgegeten
+                respawnNPC (3000);
+            } 
+            else if (player.size === npc.size) {
+                console.log("De speler en NPC zijn gelijk in grootte.");
+                // Deze regel verhelpt deze bug: NPC's kunnen aan het begin van het spel in de speler spawnen, waardoor je onmiddellijk verliest.
+               }
+            else { // Als de speler kleiner is
+                alert("Game Over"); // Einde van het spel
+                document.location.reload(); // Het spel opnieuw starten
+            }
+        }
+    }
+}
+// Functie om botsingen van NPC's met voedsel te controleren
+function checkNPCCollisions() {
+    npcs.forEach(npc => { // Voor elke NPC
+        for (let i = foodItems.length - 1; i >= 0; i--) { // Loop door alle voedsel items (achteruit om veilig te kunnen verwijderen)
+            let food = foodItems[i]; // Huidig voedsel item
+            let dx = npc.x - food.x; // Verschil op de X-as tussen NPC en voedsel
+            let dy = npc.y - food.y; // Verschil op de Y-as tussen NPC en voedsel
+            let distance = Math.sqrt(dx * dx + dy * dy); // Bereken afstand tussen NPC en voedsel
+
+
+// Controleer of er een botsing is tussen NPC en voedsel
+if (distance < npc.size / 2 + food.size / 2) {
+    // Controleer of het voedseltype geschikt is voor de NPC (bijvoorbeeld planten voor herbivoren)
+    npc.score += (food.type === 'plant') ? 20 : 20; // Verhoog de score van de NPC afhankelijk van het voedseltype
+    npc.size += 1; // Vergroot de NPC een beetje
+    foodItems.splice(i, 1); // Verwijder het voedsel uit de array
+    respawnFood(); // Respawn het voedsel na een korte vertraging
             }
         }
     }
 }
 
-// Основной игровой цикл
+// Functie om voedsel automatisch opnieuw te spawnen als het aantal onder een bepaalde limiet komt
+function spawnFoodAgain(intervalTime) {
+    setInterval(function() {
+        if (foodItems.length < foodCount) { // Controleer of er minder voedsel is dan de ingestelde limiet
+            respawnFood(); // Respawn nieuw voedsel
+        }
+    }, intervalTime); // Interval tijd in milliseconden tussen elke controle
+}
+// Load the background image
+const backgroundImage = new Image();
+backgroundImage.src = "/Images/Savannah background.jpg"; // Path to your background image
+
+// Hoofdcodes voor de spelcyclus
 function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Очистка канваса
-    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // Отрисовка фона
-    updatePlayerPosition(); // Обновление позиции игрока
-    updateNPCs(); // Обновление NPC
-    checkCollisions(); // Проверка коллизий
-    drawPlayer(); // Отрисовка игрока
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);//voeg background image toe   
+
+    // Update posities van speler en NPC's
+    updatePlayerPosition(); // Update de positie van de speler
+    updateNPCs(); // Update de posities van de NPC's
+    // Teken de speler
+    ctx.fillStyle = player.color; // Kleur van de speler
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2); // Teken de speler
+    ctx.fill(); // Vul de speler
+    ctx.closePath(); // Sluit het pad
 
     // Отрисовка еды
     foodItems.forEach(food => {
@@ -248,7 +277,10 @@ function gameLoop() {
         ctx.fill();
     });
 
-    requestAnimationFrame(gameLoop); // Запрос следующего кадра
+    // Controleer op botsingen
+    checkCollisions(); // Controleer botsingen met voedsel en NPC's
+    checkNPCCollisions(); // Controleer botsingen tussem Npc's en voedsel
+    requestAnimationFrame(gameLoop); // Vraag de volgende frame aan
 }
 // Functie om het spel te starten
 function startGame() {
