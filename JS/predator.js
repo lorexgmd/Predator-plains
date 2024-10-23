@@ -1,6 +1,123 @@
 // Hoofdvariabelen
 const canvas = document.getElementById("gameCanvas"); // Verkrijg het canvas element van de HTML
 const ctx = canvas.getContext("2d"); // Verkrijg de 2D context voor tekenen op het canvas
+
+// Animal model images (carnivores and herbivores)
+const carnivoreImages = [
+    "Images/Wild cat(C1).png",
+    "Images/Jackal (C2).png",
+    "Images/Serval (C3).png",
+    "Images/Side Striped Jackal (C4).png",
+    "Images/Caracal (C5).png",
+    "Images/Striped  Hyena (C6).png",
+    "Images/Spotted Hyena (C7).png",
+    "Images/Cheetah (C8).png",
+    "Images/Leopard (C9).png",
+    "Images/Tiger (C10).png",
+    "Images/Lion (C11).png"
+];
+
+const herbivoreImages = [
+    "Images/Herbivores/Beetle (H0).png",
+    "Images/Herbivores/African Hare (H1).png",
+    "Images/Herbivores/Springbok (H2).png",
+    "Images/Herbivores/SteenBok (H3).png",
+    "Images/Herbivores/Warthog (H4).png",
+    "Images/Herbivores/dik-dik (H5).png",
+    "Images/Herbivores/BushBuck (H6).png",
+    "Images/Herbivores/Zebra (H7).png",
+    "Images/Herbivores/Wildebeest (H8).png",
+    "Images/Herbivores/Giraffe (H9).png",
+    "Images/Herbivores/Elephant (H10).png",
+];
+
+playerImage.onload = function () {
+    drawPlayer();
+};
+
+// Load player image globally
+let playerImage = new Image(); // Initialize playerImage
+
+// Player image onload function should be set here
+playerImage.onload = function () {
+    drawPlayer(); // Redraw player when image is loaded
+};
+
+// Update the player's image based on their score
+function updatePlayerImage() {
+    let maxScore = 500;
+    let level = Math.min(Math.floor(player.score / (maxScore / 11)), 10); // Max level is 10 (c11/h11)
+    if (player.role === "carnivore") {
+        playerImage.src = carnivoreImages[level]; // Set the image based on the score for carnivores
+    } else if (player.role === "herbivore") {
+        playerImage.src = herbivoreImages[level]; // Set the image based on the score for herbivores
+    }
+}
+
+// Update the drawing function to include the player image
+function drawPlayer() {
+    ctx.drawImage(playerImage, player.x - player.size / 2, player.y - player.size / 2, player.size, player.size);
+}
+
+// In the game loop, instead of drawing the player with a circle, draw the image
+function gameLoop() {
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // Draw the background
+
+    // Update positions of player and NPCs
+    updatePlayerPosition();
+    updateNPCs();
+
+    // Update player image based on score
+    updatePlayerImage();
+
+    // Draw the player
+    drawPlayer();
+
+    // Draw food
+    foodItems.forEach(food => {
+        ctx.fillStyle = (food.type === 'plant') ? 'green' : 'red'; // Color food based on type
+        ctx.beginPath();
+        ctx.arc(food.x, food.y, food.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+    });
+
+    // Draw NPCs
+    npcs.forEach(npc => {
+        ctx.fillStyle = 'black'; // NPC color
+        ctx.beginPath();
+        ctx.arc(npc.x, npc.y, npc.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+    });
+
+    // Check collisions
+    checkCollisions();
+    checkNPCCollisions();
+
+    requestAnimationFrame(gameLoop); // Request the next frame
+}
+
+// Modify the role selection functions to load the initial image
+document.getElementById('carnivoreButton').addEventListener('click', function() {
+    player.role = 'carnivore';
+    player.color = 'red';
+    playerImage.src = carnivoreImages[0];
+    chooseRole();
+});
+
+document.getElementById('herbivoreButton').addEventListener('click', function() {
+    player.role = 'herbivore';
+    player.color = 'green';
+    playerImage.src = herbivoreImages[0];
+    chooseRole();
+});
+
+
+// Function to start the game (this shows the role selection)
+function startGame() {
+    showRoleSelection();
+}
 // Speler
 let player = {
     x: canvas.width / 2, // Beginpositie van de speler op de X-as (midden van het canvas)
@@ -42,18 +159,7 @@ function chooseRole() {
     spawnNPCs(); // Спавним NPC
     gameLoop(); // Запускаем игровой цикл
 }
-// Установим обработчики событий для кнопок
-document.getElementById('carnivoreButton').addEventListener('click', function() {
-    player.role = 'carnivore'; // Установим роль как Carnivore
-    player.color = 'red'; // Меняем цвет игрока для Carnivore
-    chooseRole(); // Запускаем игру
-});
 
-document.getElementById('herbivoreButton').addEventListener('click', function() {
-    player.role = 'herbivore'; // Установим роль как Herbivore
-    player.color = 'green'; // Меняем цвет игрока для Herbivore
-    chooseRole(); // Запускаем игру
-});
 function showRoleSelection() {
     document.getElementById('roleSelection').style.display = 'block'; // Показываем блок с выбором роли
 }
@@ -69,16 +175,15 @@ function spawnFood() {
     }
 }
 // Functie om voedsel opnieuw te spawnen na een vertraging
-function respawnFood(x, y, delay) {
-    // Stel een timeout in om voedsel te spawnen na een bepaalde vertraging
+function respawnFood(x = Math.random() * canvas.width, y = Math.random() * canvas.height, delay = 3000) {
     setTimeout(function() {
         foodItems.push({
-            x: Math.random() * canvas.width, // Willekeurige X-positie binnen het canvas
-            y: Math.random() * canvas.height, // Willekeurige Y-positie binnen het canvas
+            x: x, // Willekeurige X-positie binnen het canvas
+            y: y, // Willekeurige Y-positie binnen het canvas
             size: newFoodSize, // Grootte van het nieuwe voedselitem
-            type: Math.random() > 0.5 ? 'plant' : 'meat' // Willekeurig type voedsel: plant (50%) of vlees (50%)
+            type: Math.random() > 0.5 ? 'plant' : 'meat' // Willekeurig type voedsel: plant of vlees
         });
-    }, delay); // Wacht een opgegeven aantal milliseconden voordat het voedsel wordt gespawned
+    }, delay); 
 }
 // Functie om NPC's te spawnen
 function spawnNPCs() {
@@ -94,18 +199,18 @@ function spawnNPCs() {
         });
     }
 }
-function respawnNPC(x, y, delay) { // Functie om NPC's te respawnen als ze dood zijn
+function respawnNPC(x = Math.random() * canvas.width, y = Math.random() * canvas.height, delay = 3000) {
     setTimeout(function() {
         npcs.push({
-            x:Math.random() * canvas.width,
-            y:Math.random() * canvas.height,
-            size: newNpcSize, // De initiële massa is dezelfde als die van de speler aan het begin
-            speed: npcSpeed, // NPC-snelheid
-            directionX: Math.random() > 0.5 ? 1 : -1, // Willekeurige X-richting
-            directionY: Math.random() > 0.5 ? 1 : -1,  // Willekeurige Y-richting
-            type: Math.random() > 0.5 ? 'carnivore' : 'herbivore' // Willekeurig type
+            x: x, 
+            y: y, 
+            size: newNpcSize,
+            speed: npcSpeed, 
+            directionX: Math.random() > 0.5 ? 1 : -1,
+            directionY: Math.random() > 0.5 ? 1 : -1, 
+            type: Math.random() > 0.5 ? 'carnivore' : 'herbivore'
         });
-    }, delay); // Respawn na een bepaald aantal milliseconden
+    }, delay);
 }
 
 // Functie om de positie van de speler bij te werken op basis van de muis
@@ -170,24 +275,24 @@ function checkCollisions() {
         }
     }
     // Botsing met NPC
-    for (let i = npcs.length - 1; i >= 0; i--) { // We doorlopen de NPC's in omgekeerde volgorde
-        let npc = npcs[i]; // Huidige NPC
-        let dx = player.x - npc.x; // X-verschil
-        let dy = player.y - npc.y; // Y-verschil
-        let distance = Math.sqrt(dx * dx + dy * dy); // Afstand tussen speler en NPC
+for (let i = npcs.length - 1; i >= 0; i--) { 
+    let npc = npcs[i]; 
+    let dx = player.x - npc.x; 
+    let dy = player.y - npc.y; 
+    let distance = Math.sqrt(dx * dx + dy * dy); 
 
         // Controleer of er een botsing is
-        if (distance < player.size / 2 + npc.size / 2) {
-            if (player.size > npc.size) { // Als de speler meer is
-                player.score += 50; // Punten verhogen
-                player.size += 5; // Het vergroten van de spelersgrootte
-                let npcX = npc.x; // Bewaar de coördinaten van de opgegeten NPC
-                let npcY = npc.y;
+    if (distance < player.size / 2 + npc.size / 2) {
+        if (player.size > npc.size) { 
+            player.score += 50; 
+            player.size += 5; 
+            let npcX = npc.x; 
+            let npcY = npc.y;
 
                 npcs.splice(i, 1); // NPC's verwijderen
 
-                // Respawnt een nieuwe NPC na 3 seconden op de plaats van degene die is opgegeten
-                respawnNPC (3000);
+                 // Respawn a new NPC at the old coordinates after a delay
+            respawnNPC(npcX, npcY, 3000); 
             } 
             else if (player.size === npc.size) {
                 console.log("De speler en NPC zijn gelijk in grootte.");
@@ -233,21 +338,37 @@ function spawnFoodAgain(intervalTime) {
 }
 // Load the background image
 const backgroundImage = new Image();
-backgroundImage.src = "/Images/Savannah background.jpg"; // Path to your background image
+backgroundImage.src = "Images/Savannah background.jpg"; // Ensure this path is correct
 
+backgroundImage.onload = function() {
+    requestAnimationFrame(gameLoop); // Start the game loop once the background image is loaded
+};
+// checking if both images have been loaded before starting the game
+let imagesLoaded = 0;
+const totalImages = 2; // playerImage and backgroundImage
+
+function checkStartGame() {
+    imagesLoaded++;
+    if (imagesLoaded === totalImages) {
+        requestAnimationFrame(gameLoop); // Start game loop once both images are loaded
+    }
+}
+
+playerImage.onload = checkStartGame;
+backgroundImage.onload = checkStartGame;
 // Hoofdcodes voor de spelcyclus
 function gameLoop() {
-    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);//voeg background image toe   
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // Voeg achtergrond toe
 
     // Update posities van speler en NPC's
     updatePlayerPosition(); // Update de positie van de speler
     updateNPCs(); // Update de posities van de NPC's
+
+    // Update spelerafbeelding op basis van score
+    updatePlayerImage(); // Zorg dat de juiste afbeelding voor de speler wordt gekozen
+
     // Teken de speler
-    ctx.fillStyle = player.color; // Kleur van de speler
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2); // Teken de speler
-    ctx.fill(); // Vul de speler
-    ctx.closePath(); // Sluit het pad
+    drawPlayer(); // Gebruik de functie om de spelerafbeelding te tekenen
 
     // Teken voedsel
     foodItems.forEach(food => { // Voor elk voedsel item
@@ -269,7 +390,7 @@ function gameLoop() {
 
     // Controleer op botsingen
     checkCollisions(); // Controleer botsingen met voedsel en NPC's
-    checkNPCCollisions(); // Controleer botsingen tussem Npc's en voedsel
+    checkNPCCollisions(); // Controleer botsingen tussem NPC's en voedsel
     requestAnimationFrame(gameLoop); // Vraag de volgende frame aan
 }
 // Functie om het spel te starten
