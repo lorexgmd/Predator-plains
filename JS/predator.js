@@ -6,7 +6,7 @@ const ctx = canvas.getContext("2d"); // Verkrijg de 2D context voor tekenen op h
 let player = {
     x: canvas.width / 2, // Beginpositie van de speler op de X-as (midden van het canvas)
     y: canvas.height / 2, // Beginpositie van de speler op de Y-as (midden van het canvas)
-    size: 30, // Begin grootte van de speler
+    size: 50, // Begin grootte van de speler
     speed: 1, // Snelheid van de speler
     score: 0, // Begin score van de speler
     role: null, // Rol van de speler (Carnivore of Herbivore)
@@ -16,6 +16,8 @@ let player = {
 // Lijsten voor voedsel en NPC's
 let foodItems = []; // Array voor voedsel items
 let npcs = []; // Array voor NPC's
+let isGameOver = false;
+let entities = [player, ...npcs];
 
 
 // Spelinstellingen
@@ -23,7 +25,7 @@ const foodCount = 100; // Aantal voedsel dat gespawnd moet worden
 const npcCount = 10; // Aantal NPC's dat gespawnd moet worden
 const foodSize = 10; // Grotte van food
 const npcSpeed = 1; // Snelheid van NPC's (verlaagd voor betere gameplay)
-const newNpcSize = 30; // Begin score van de NPC
+const newNpcSize = 50; // Begin score van de NPC
 const newFoodSize = 10; // Grotte van nieuw food
 
 // Initialisatie van muispositie
@@ -33,26 +35,26 @@ let mouseY = player.y; // Beginpositie van de muis op de Y-as
 // Function to prompt player to choose role
 function chooseRole() {
     document.getElementById('roleSelection').style.display = 'none'; // Hide the role selection
-    playBackgroundMusic();
-    spawnFood(); // Spawn food
-    spawnNPCs(); // Spawn NPCs
-    gameLoop(); // Start game loop
-
+    spawnFood(); // Spawn Voedsel's
+    spawnNPCs(); // Spawn NPC's
+    playBackgroundMusic(); // Speel achtergrondmuziek
+    isGameOver = false; // Zorg ervoor dat het spel nog niet voorbij is
+    gameLoop(); // Start de spellus
 }
-// Установим обработчики событий для кнопок
+// Installeer gebeurtenishandlers voor knoppen
 document.getElementById('carnivoreButton').addEventListener('click', function() {
-    player.role = 'carnivore'; // Установим роль как Carnivore
-    player.color = 'red'; // Меняем цвет игрока для Carnivore
-    chooseRole(); // Запускаем игру
+    player.role = 'carnivore'; // Laten we de rol van Carnivoor instellen
+    player.color = 'red'; // De spelerkleur voor Carnivore veranderen
+    chooseRole(); // Laten we het spel starten
 });
 
 document.getElementById('herbivoreButton').addEventListener('click', function() {
-    player.role = 'herbivore'; // Установим роль как Herbivore
-    player.color = 'green'; // Меняем цвет игрока для Herbivore
-    chooseRole(); // Запускаем игру
+    player.role = 'herbivore'; // Laten we de rol instellen als Herbivoor
+    player.color = 'green'; // De spelerkleur voor Herbivore veranderen
+    chooseRole(); // Laten we het spel starten
 });
 function showRoleSelection() {
-    document.getElementById('roleSelection').style.display = 'block'; // Показываем блок с выбором роли
+    document.getElementById('roleSelection').style.display = 'block'; // Een blok tonen met rolselectie
 }
 
 // Functie om voedsel te spawnen
@@ -81,56 +83,185 @@ function respawnFood(x, y, delay) {
 // Functie om NPC's te spawnen
 function spawnNPCs() {
     for (let i = 0; i < npcCount; i++) { // Voor elke NPC
+        const type = Math.random() > 0.5 ? 'carnivore' : 'herbivore'; // Willekeurig type
         npcs.push({ // Voeg een nieuwe NPC toe aan de array
             x: Math.random() * canvas.width, // Willekeurige X-positie
             y: Math.random() * canvas.height, // Willekeurige Y-positie
             size: player.size, // Grootte van de NPC gelijk aan de speler
             speed: npcSpeed, // Snelheid van de NPC
+            score: 0, // Initialiseer de score van de NPC
             directionX: Math.random() > 0.5 ? 1 : -1, // Willekeurige richting op de X-as
             directionY: Math.random() > 0.5 ? 1 : -1, // Willekeurige richting op de Y-as
-            type: Math.random() > 0.5 ? 'carnivore' : 'herbivore' // Willekeurig type
+            type: type, // NPC-type
+            color: type === 'carnivore' ? 'red' : 'green' // Kleur afhankelijk van type
         });
     }
 }
-function respawnNPC(x, y, delay) { // Functie om NPC's te respawnen als ze dood zijn
+function respawnNPC(x, y, delay) {
     setTimeout(function() {
+        const type = Math.random() > 0.5 ? 'carnivore' : 'herbivore'; // Willekeurig NPC-type
+
         npcs.push({
-            x:Math.random() * canvas.width,
-            y:Math.random() * canvas.height,
-            size: newNpcSize, // De initiële massa is dezelfde als die van de speler aan het begin
-            speed: npcSpeed, // NPC-snelheid
-            directionX: Math.random() > 0.5 ? 1 : -1, // Willekeurige X-richting
-            directionY: Math.random() > 0.5 ? 1 : -1,  // Willekeurige Y-richting
-            type: Math.random() > 0.5 ? 'carnivore' : 'herbivore' // Willekeurig type
+            x: x !== undefined ? x : Math.random() * canvas.width,
+            y: y !== undefined ? y : Math.random() * canvas.height,
+            size: newNpcSize, // NPC-startgrootte
+            speed: npcSpeed, // Snelheid van NPC
+            directionX: Math.random() > 0.5 ? 1 : -1,
+            directionY: Math.random() > 0.5 ? 1 : -1,
+            type: type // Generatie van NPC-type
         });
-    }, delay); // Respawn na een bepaald aantal milliseconden
+    }, delay);
 }
-// Система эволюции для игрока
+
+// Evolutiesysteem voor de speler
 function checkEvolution() {
-    if (player.role === 'carnivore') { // Если игрок хищник
-        if (player.score >= 100 && player.score < 200) {
-            player.size = 50; // Эволюция: увеличиваем размер
-            player.color = 'darkred'; // Меняем цвет для визуализации
-        } else if (player.score >= 200 && player.score < 300) {
-            player.size = 70;
-            player.color = 'brown';
-        } else if (player.score >= 300) {
-            player.size = 100;
-            player.color = 'black';
-        }
-    } else if (player.role === 'herbivore') { // Если игрок травоядный
-        if (player.score >= 100 && player.score < 200) {
-            player.size = 40; // Эволюция: увеличиваем размер
-            player.color = 'darkgreen'; // Меняем цвет для визуализации
-        } else if (player.score >= 200 && player.score < 300) {
+    if (player.role === 'carnivore') { // Als de speler een carnivore is
+        if (player.score >= 0 && player.score < 100) {
+            player.size = 50;
+            player.color = 'red'; // lvl 1
+        } else if (player.score >= 100 && player.score < 200) {
             player.size = 55;
-            player.color = 'olive';
-        } else if (player.score >= 300) {
+            player.color = 'darkred'; // lvl 2
+        } else if (player.score >= 200 && player.score < 300) {
+            player.size = 60;
+            player.color = 'brown'; // lvl 3
+        } else if (player.score >= 300 && player.score < 400) {
+            player.size = 65;
+            player.color = 'sienna'; // lvl 4
+        } else if (player.score >= 400 && player.score < 500) {
+            player.size = 70;
+            player.color = 'chocolate'; // lvl 5
+        } else if (player.score >= 500 && player.score < 600) {
+            player.size = 75;
+            player.color = 'peru'; // lvl 6
+        } else if (player.score >= 600 && player.score < 700) {
             player.size = 80;
-            player.color = 'forestgreen';
+            player.color = 'saddlebrown'; // lvl 7
+        } else if (player.score >= 700 && player.score < 800) {
+            player.size = 85;
+            player.color = 'black'; // lvl 8
+        } else if (player.score >= 800 && player.score < 900) {
+            player.size = 90;
+            player.color = 'maroon'; // lvl 9
+        } else if (player.score >= 900 && player.score < 1000) {
+            player.size = 95;
+            player.color = 'firebrick'; // lvl 10
+        } else if (player.score >= 1000) {
+            player.size = 100;
+            player.color = 'darkred'; // lvl 11
+        }
+    } else if (player.role === 'herbivore') { // Als de speler een herbivoor is
+        if (player.score >= 0 && player.score < 100) {
+            player.size = 50;
+            player.color = 'green'; // lvl 1
+        } else if (player.score >= 100 && player.score < 200) {
+            player.size = 55;
+            player.color = 'darkgreen'; // lvl 2
+        } else if (player.score >= 200 && player.score < 300) {
+            player.size = 60;
+            player.color = 'olive'; // lvl 3
+        } else if (player.score >= 300 && player.score < 400) {
+            player.size = 65;
+            player.color = 'forestgreen'; // lvl 4
+        } else if (player.score >= 400 && player.score < 500) {
+            player.size = 70;
+            player.color = 'limegreen'; // lvl 5
+        } else if (player.score >= 500 && player.score < 600) {
+            player.size = 75;
+            player.color = 'yellowgreen'; // lvl 6
+        } else if (player.score >= 600 && player.score < 700) {
+            player.size = 80;
+            player.color = 'mediumseagreen'; // lvl 7
+        } else if (player.score >= 700 && player.score < 800) {
+            player.size = 85;
+            player.color = 'seagreen'; // lvl 8
+        } else if (player.score >= 800 && player.score < 900) {
+            player.size = 90;
+            player.color = 'springgreen'; // lvl 9
+        } else if (player.score >= 900 && player.score < 1000) {
+            player.size = 95;
+            player.color = 'lightgreen'; // lvl 10
+        } else if (player.score >= 1000) {
+            player.size = 100;
+            player.color = 'palegreen'; // lvl 11
         }
     }
 }
+// Evolutiesysteem voor NPC's
+function checkEvolutionForNPC(npc) {
+    if (npc.type === 'carnivore') { // Als de NPC een carnivore is
+        if (npc.score >= 0 && npc.score < 100) {
+            npc.size = 50;
+            npc.color = 'red'; // lvl 1
+        } else if (npc.score >= 100 && npc.score < 200) {
+            npc.size = 55;
+            npc.color = 'darkred'; // lvl 2
+        } else if (npc.score >= 200 && npc.score < 300) {
+            npc.size = 60;
+            npc.color = 'brown'; // lvl 3
+        } else if (npc.score >= 300 && npc.score < 400) {
+            npc.size = 65;
+            npc.color = 'sienna'; // lvl 4
+        } else if (npc.score >= 400 && npc.score < 500) {
+            npc.size = 70;
+            npc.color = 'chocolate'; // lvl 5
+        } else if (npc.score >= 500 && npc.score < 600) {
+            npc.size = 75;
+            npc.color = 'peru'; // lvl 6
+        } else if (npc.score >= 600 && npc.score < 700) {
+            npc.size = 80;
+            npc.color = 'saddlebrown'; // lvl 7
+        } else if (npc.score >= 700 && npc.score < 800) {
+            npc.size = 85;
+            npc.color = 'black'; // lvl 8
+        } else if (npc.score >= 800 && npc.score < 900) {
+            npc.size = 90;
+            npc.color = 'maroon'; // lvl 9
+        } else if (npc.score >= 900 && npc.score < 1000) {
+            npc.size = 95;
+            npc.color = 'firebrick'; // lvl 10
+        } else if (npc.score >= 1000) {
+            npc.size = 100;
+            npc.color = 'darkred'; // lvl 11
+        }
+    } else if (npc.type === 'herbivore') { // Als de NPC een herbivoor is
+        if (npc.score >= 0 && npc.score < 100) {
+            npc.size = 50;
+            npc.color = 'green'; // lvl 1
+        } else if (npc.score >= 100 && npc.score < 200) {
+            npc.size = 55;
+            npc.color = 'darkgreen'; // lvl 2
+        } else if (npc.score >= 200 && npc.score < 300) {
+            npc.size = 60;
+            npc.color = 'olive'; // lvl 3
+        } else if (npc.score >= 300 && npc.score < 400) {
+            npc.size = 65;
+            npc.color = 'forestgreen'; // lvl 4
+        } else if (npc.score >= 400 && npc.score < 500) {
+            npc.size = 70;
+            npc.color = 'limegreen'; // lvl 5
+        } else if (npc.score >= 500 && npc.score < 600) {
+            npc.size = 75;
+            npc.color = 'yellowgreen'; // lvl 6
+        } else if (npc.score >= 600 && npc.score < 700) {
+            npc.size = 80;
+            npc.color = 'mediumseagreen'; // lvl 7
+        } else if (npc.score >= 700 && npc.score < 800) {
+            npc.size = 85;
+            npc.color = 'seagreen'; // lvl 8
+        } else if (npc.score >= 800 && npc.score < 900) {
+            npc.size = 90;
+            npc.color = 'springgreen'; // lvl 9
+        } else if (npc.score >= 900 && npc.score < 1000) {
+            npc.size = 95;
+            npc.color = 'lightgreen'; // lvl 10
+        } else if (npc.score >= 1000) {
+            npc.size = 100;
+            npc.color = 'palegreen'; // lvl 11
+        }
+    }
+}
+
 
 // Functie om de positie van de speler bij te werken op basis van de muis
 function updatePlayerPosition() {
@@ -165,6 +296,8 @@ function updateNPCs() {
         if (npc.y <= 0 || npc.y >= canvas.height) {
             npc.directionY *= -1; // Verander richting op de Y-as
         }
+         // Het controleren van de evolutie van elke NPC
+         checkEvolutionForNPC(npc);
     });
 }
 
@@ -195,10 +328,9 @@ function gameOver() {
     gameOverSound.play().catch(error => {
         console.error("Error playing game over sound:", error);
     });
-
+    isGameOver = true; // Het stoppen van de spellus
     alert("Game Over! Your score was: " + player.score);
-    resetGame();
-}
+restartGame();}
 function checkCollisions() {
     // Botsing met voedsel
     for (let i = foodItems.length - 1; i >= 0; i--) { // Loop achteruit om te kunnen verwijderen
@@ -209,49 +341,77 @@ function checkCollisions() {
 
         // Controleer of er een botsing is
         if (distance < player.size / 2 + food.size / 2) {
+            console.log('Collision detected');
             // Absorbeer het voedsel
-              // Play sound based on food type
-              playEatingSound(food.type);
-
-            player.score += (food.type === 'plant') ? 10 : 20; // Verhoog score op basis van voedseltype
-            player.size += 1; // Vergroot de speler een beetje
+            playEatingSound(food.type); // Play sound based on food type
+    
+            console.log('Player score before:', player.score);
+            if (player.role === 'carnivore') {
+                if (food.type === 'meat') {
+                    player.score += 10;
+                    console.log('Carnivore ate meat, score:', player.score);
+                } else {
+                    player.score = Math.max(0, player.score - 5); // Verlaagt de score, maar niet onder 0
+                    console.log('Carnivore ate plant, score:', player.score);
+                }
+            } else if (player.role === 'herbivore') {
+                if (food.type === 'plant') {
+                    player.score += 10;
+                    console.log('Herbivore ate plant, score:', player.score);
+                } else {
+                    player.score = Math.max(0, player.score - 5); // Verlaagt de score, maar niet onder 0
+                    console.log('Herbivore ate meat, score:', player.score);
+                }
+            }
 
             foodItems.splice(i, 1); // Verwijder voedsel uit de array
-            //
-            respawnFood();
+            respawnFood(); // Herspawn van nieuw voedsel
         }
     }
-    // Botsing met NPC
-    for (let i = npcs.length - 1; i >= 0; i--) { // We doorlopen de NPC's in omgekeerde volgorde
-        let npc = npcs[i]; // Huidige NPC
-        let dx = player.x - npc.x; // X-verschil
-        let dy = player.y - npc.y; // Y-verschil
-        let distance = Math.sqrt(dx * dx + dy * dy); // Afstand tussen speler en NPC
+// Botsing met NPC
+for (let i = npcs.length - 1; i >= 0; i--) { // We doorlopen de NPC's in omgekeerde volgorde
+    let npc = npcs[i]; // Huidige NPC
+    let dx = player.x - npc.x; // X-verschil
+    let dy = player.y - npc.y; // Y-verschil
+    let distance = Math.sqrt(dx * dx + dy * dy); // Afstand tussen speler en NPC
 
-        // Controleer of er een botsing is
-        if (distance < player.size / 2 + npc.size / 2) {
-            if (player.size > npc.size) { // Als de speler meer is
-                player.score += 50; // Punten verhogen
-                player.size += 5; // Het vergroten van de spelersgrootte
-                let npcX = npc.x; // Bewaar de coördinaten van de opgegeten NPC
-                let npcY = npc.y;
-
+    // Controleer of er een botsing is
+    if (distance < player.size / 2 + npc.size / 2) {
+        // Het spelerstype en de NPC controleren
+        if (player.role === 'carnivore') {
+            if (npc.type === 'carnivore') {
+                // Als beide carnivoren zijn, controleer dan de score
+                if (player.score > npc.score) {
+                    player.score += npc.score; // De speler ontvangt NPC-punten
+                    npcs.splice(i, 1); // NPC's verwijderen
+                    respawnNPC(3000); // Een nieuwe NPC opnieuw oproepen
+                    playEatingSound('meat'); // Het geluid van eten
+                } else if (npc.score > player.score) {
+                    console.log("NPC-хищник съел игрока!");
+                    gameOver(); // Het spel is afgelopen als NPC meer punten heeft
+                }
+            } else {
+                // Een roofdier kan een herbivoor NP opetenC
+                player.score += npc.score; // De speler ontvangt NPC-punten
                 npcs.splice(i, 1); // NPC's verwijderen
-
-                // Respawnt een nieuwe NPC na 3 seconden op de plaats van degene die is opgegeten
-                respawnNPC (3000);
-                playEatingSound('meat');
-            } 
-            else if (player.size === npc.size) {
-                console.log("De speler en NPC zijn gelijk in grootte.");
-                // Deze regel verhelpt deze bug: NPC's kunnen aan het begin van het spel in de speler spawnen, waardoor je onmiddellijk verliest.
-               }
-            else { // Als de speler kleiner is
-               gameOver();
-               return;
+                respawnNPC(3000); // Een nieuwe NPC opnieuw oproepen
+                playEatingSound('meat'); // Het geluid van eten
+            }
+        } else if (player.role === 'herbivore') {
+            if (npc.type === 'carnivore') {
+                // Als de NPC een roofdier is en de speler een herbivoor
+                if (npc.score > player.score) {
+                    console.log("NPC-хищник съел игрока-травоядного!");
+                    gameOver(); // Einde van het spel
+                } else {
+                    console.log("Игрок травоядный, хищник не может его съесть, так как у игрока больше очков.");
+                }
+            } else {
+                console.log("Травоядный не может съесть других животных.");
             }
         }
     }
+}
 }
 // Function to play background music
 function playBackgroundMusic() {
@@ -272,17 +432,87 @@ function checkNPCCollisions() {
 
 // Controleer of er een botsing is tussen NPC en voedsel
 if (distance < npc.size / 2 + food.size / 2) {
-    // Controleer of het voedseltype geschikt is voor de NPC (bijvoorbeeld planten voor herbivoren)
-    npc.score += (food.type === 'plant') ? 20 : 20; // Verhoog de score van de NPC afhankelijk van het voedseltype
-    npc.size += 1; // Vergroot de NPC een beetje
+            if (npc.type === 'carnivore') {
+                if (food.type === 'meat') {
+                    npc.score += 10;
+                    console.log('Carnivore ate meat, score:', npc.score);
+                } else {
+                    npc.score = Math.max(0, npc.score - 5); // Verlaagt de score, maar niet onder 0
+                    console.log('Carnivore ate plant, score:', npc.score);
+                }
+            } else if (npc.type === 'herbivore') {
+                if (food.type === 'plant') {
+                    npc.score += 10;
+                    console.log('Herbivore ate plant, score:', npc.score);
+                } else {
+                    npc.score = Math.max(0, npc.score - 5); // Verlaagt de score, maar niet onder 0
+                    console.log('Herbivore ate meat, score:', npc.score);
+                }
+            }
     foodItems.splice(i, 1); // Verwijder het voedsel uit de array
     respawnFood(); // Respawn het voedsel na een korte vertraging
             }
         }
     });
+// Botsingen tussen NPC's controleren
+for (let i = 0; i < npcs.length; i++) {
+    for (let j = i + 1; j < npcs.length; j++) {
+        let npcA = npcs[i];
+        let npcB = npcs[j];
+        let dx = npcA.x - npcB.x;
+        let dy = npcA.y - npcB.y;
+        let distance = Math.sqrt(dx * dx + dy * dy);
+
+        // Controleren op botsingen tussen NPC's
+        if (distance < npcA.size / 2 + npcB.size / 2) {
+            // Interactie logica
+            if (npcA.type === 'carnivore' && npcB.type === 'herbivore') {
+                npcA.score += npcB.score; // Het roofdier "eet" de herbivoor en krijgt zijn punten
+                npcs.splice(j, 1); // Een herbivoor uit de array verwijderen
+                console.log(`Carnivore ate herbivore. New score: ${npcA.score}`);
+                respawnNPC(3000); // Herbivoor respawnt na 3 seconden
+            } else if (npcB.type === 'carnivore' && npcA.type === 'herbivore') {
+                npcB.score += npcA.score; // Het roofdier "eet" de herbivoor en krijgt zijn punten
+                npcs.splice(i, 1); // Een herbivoor uit de array verwijderen
+                console.log(`Carnivore ate herbivore. New score: ${npcB.score}`);
+                respawnNPC(3000); // Herbivoor respawnt na 3 seconden
+            } else if (npcA.type === 'carnivore' && npcB.type === 'carnivore') {
+                // Logica voor roofdieren om elkaar op te eten
+                if (npcA.size > npcB.size) {
+                    npcA.score += npcB.score; // Het grotere roofdier "eet" de kleinere en krijgt zijn punten
+                    npcs.splice(j, 1); // Een kleiner roofdier uit de array verwijderen
+                    console.log(`Carnivore A ate Carnivore B. New score: ${npcA.score}`);
+                    respawnNPC(3000); // Respawn van een kleiner roofdier na 3 seconden
+                } else if (npcB.size > npcA.size) {
+                    npcB.score += npcA.score; // Het grotere roofdier "eet" de kleinere en krijgt zijn punten
+                    npcs.splice(i, 1); // Een kleiner roofdier uit de array verwijderen
+                    console.log(`Carnivore B ate Carnivore A. New score: ${npcB.score}`);
+                    respawnNPC(3000); // Respawn van een kleiner roofdier na 3 seconden
+                } else {
+                    console.log("No interaction; both carnivores are equal in size.");
+                }
+            } else {
+                console.log("No interaction; both are herbivores or equal size.");
+            }
+        }
+    }
 }
+}
+function updateLeaderboard() {
+    // Create an array of entities to include player and NPCs
+    let entities = [player, ...npcs]; 
 
+    // Sort entities based on their scores
+    entities.sort((a, b) => b.score - a.score);
 
+    // Prepare leaderboard data
+    leaderboard = entities.slice(0, 5).map(entity => {
+        return {
+            name: entity === player ? 'Player' : `NPC ${npcs.indexOf(entity) + 1}`,
+            score: entity.score
+        };
+    });
+}
 
 // Functie om voedsel automatisch opnieuw te spawnen als het aantal onder een bepaalde limiet komt
 function spawnFoodAgain(intervalTime) {
@@ -294,6 +524,7 @@ function spawnFoodAgain(intervalTime) {
 }
 // Hoofdcodes voor de spelcyclus
 function gameLoop() {
+    if (!isGameOver) {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Wis het canvas
 
     // Update posities van speler en NPC's
@@ -305,7 +536,6 @@ function gameLoop() {
     ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2); // Teken de speler
     ctx.fill(); // Vul de speler
     ctx.closePath(); // Sluit het pad
-
     // Teken voedsel
     foodItems.forEach(food => { // Voor elk voedsel item
         ctx.fillStyle = (food.type === 'plant') ? 'green' : 'red'; // Kleur van voedsel op basis van type
@@ -317,18 +547,57 @@ function gameLoop() {
 
     // Teken NPC's
     npcs.forEach(npc => { // Voor elke NPC
-        ctx.fillStyle = 'orange'; // Kleur van NPC's
+        ctx.fillStyle = npc.color; // Kleur van NPC's
         ctx.beginPath();
         ctx.arc(npc.x, npc.y, npc.size / 2, 0, Math.PI * 2); // Teken de NPC
         ctx.fill(); // Vul de NPC
         ctx.closePath(); // Sluit het pad
     });
+// Spelerscoreweergave
+ctx.fillStyle = 'black'; // Tekstkleur
+ctx.font = '32px Arial'; // Tekst lettertype
+ctx.textAlign = 'left'; // Links uitlijnen
+ctx.fillText(`Score: ${player.score}`, 10, 30); // Geef de score weer in de linkerbovenhoek
 
+updateLeaderboard(); // Het klassement bijwerken
+
+// Het klassement tekenen
+ctx.fillStyle = 'black';
+ctx.font = '20px Arial';
+ctx.textAlign = 'right'; // Rechts uitlijnen voor de rechterbovenhoek
+ctx.fillText("Leaderboard:", canvas.width - 10, 30); // Rubriek
+leaderboard.forEach((entry, index) => {
+    ctx.fillText(`${entry.name}: ${entry.score}`, canvas.width - 10, 50 + index * 20); // Geef elk item weer
+});
     // Controleer op botsingen
     checkCollisions(); // Controleer botsingen met voedsel en NPC's
     checkNPCCollisions(); // Controleer botsingen tussem Npc's en voedsel
     checkEvolution(); 
     requestAnimationFrame(gameLoop); // Vraag de volgende frame aan
+}}
+// Functie om NPC te initialiseren
+function initNPCs() {
+    npcs = []; // De NPC-array wissen
+    spawnNPCs(); // Roep de NPC-spawn-functie op
+}
+
+// Functie om voedsel te initialiseren
+function initFood() {
+    foodItems = []; // Het opruimen van de voedselreeks
+    spawnFood(); // De voedselspawn-functie oproepen
+}
+function restartGame() {
+    player.speed = 1;
+    player.score = 0; // De score van een speler resetten
+    player.x = canvas.width / 2; // Het resetten van de positie van een speler
+    player.y = canvas.height / 2; // Het resetten van de positie van een speler
+    player.size = 50; // Spelergrootte opnieuw instellen
+    player.role = ''; // Een spelersrol resetten
+    npcs = []; // NPC-array wissen
+    foodItems = []; // Voedsel array wissen
+    isGameOver = false; // Spelstatus resetten
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Wis het canvas
+    showRoleSelection(); // Een rol kiezen voordat je het spel start
 }
 // Functie om het spel te starten
     function startGame() {
