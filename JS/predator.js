@@ -535,6 +535,9 @@ function gameLoop() {
     ctx.beginPath();
     ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2); // Teken de speler
     ctx.fill(); // Vul de speler
+    ctx.lineWidth = 2; // Border Width
+    ctx.strokeStyle = 'black'; // Border color
+    ctx.stroke(); // Draw border
     ctx.closePath(); // Sluit het pad
     // Teken voedsel
     foodItems.forEach(food => { // Voor elk voedsel item
