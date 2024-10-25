@@ -7,9 +7,25 @@
 <title>Predator Plains</title>
 </head>
 <body>
-    <div id="roleSelection">
-        <button id="carnivoreButton">Carnivore</button>
-        <button id="herbivoreButton">Herbivore</button>
+    <div id="menuScreen">
+        <h1><img src="images/predatorplains.png" alt="Predator Plains Logo" id="logoImage">
+</h1>
+        <h3 style="font-size: 32px;">Choose your role:</h3>
+        <div id="roleSelection">
+            <button id="carnivoreButton" style="background-color: #ff0000;"><img src="images/carnivoren.png" alt="Carnivore"></button>
+            <button id="herbivoreButton" style="background-color: #4CAF50;"><img src="images/herbivoren.png" alt="Carnivore"></button>
+        </div>
+        <p style="font-size: 28px;">Don't know the rules of the game? Then click here:</p>
+        <button id="rulesButton">Game Rules</button>
+        <div id="rulesList" style="display:none;">
+            <h4>Game Rules:</h4>
+            <ul>
+                <li>Herbivores can eat plants, but lose points for eating meat.</li>
+                <li>Carnivores can eat meat, but lose points for eating plants.</li>
+                <li>Each player evolves as they gain points.</li>
+                <li>Avoid predators to survive and climb the leaderboard!</li>
+            </ul>
+        </div>
     </div>
         <!-- Sound elements -->
         <audio id="backgroundMusic" src="sounds/backgroundMusic.mp3" preload="auto"></audio>

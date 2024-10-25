@@ -1,7 +1,11 @@
 // Hoofdvariabelen
 const canvas = document.getElementById("gameCanvas"); // Verkrijg het canvas element van de HTML
 const ctx = canvas.getContext("2d"); // Verkrijg de 2D context voor tekenen op het canvas
-
+const menuScreen = document.getElementById('menuScreen');
+const rulesButton = document.getElementById('rulesButton');
+const rulesList = document.getElementById('rulesList');
+const backgroundImage = new Image();
+backgroundImage.src = "/Images/Savannah background.jpg"; // Path to your background image
 // Speler
 let player = {
     x: canvas.width / 2, // Beginpositie van de speler op de X-as (midden van het canvas)
@@ -31,9 +35,19 @@ const newFoodSize = 10; // Grotte van nieuw food
 let mouseX = player.x; // Beginpositie van de muis op de X-as
 let mouseY = player.y; // Beginpositie van de muis op de Y-as
 
+
+rulesButton.addEventListener('click', () => {
+    if (rulesList.style.display === 'none') {
+        rulesList.style.display = 'block';
+    } else {
+        rulesList.style.display = 'none';
+    }
+});
 // Function to prompt player to choose role
 function chooseRole() {
     document.getElementById('roleSelection').style.display = 'none'; // Hide the role selection
+    menuScreen.style.display = 'none';  // Скрыть меню
+    gameCanvas.style.display = 'block'; // Показать канвас игры
     spawnFood(); // Spawn Voedsel's
     spawnNPCs(); // Spawn NPC's
     playBackgroundMusic(); // Speel achtergrondmuziek
@@ -527,7 +541,7 @@ function spawnFoodAgain(intervalTime) {
 function gameLoop() {
     if (!isGameOver) {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Wis het canvas
-
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);//voeg background image toe
     // Update posities van speler en NPC's
     updatePlayerPosition(); // Update de positie van de speler
     updateNPCs(); // Update de posities van de NPC's
@@ -601,11 +615,14 @@ function restartGame() {
     foodItems = []; // Voedsel array wissen
     isGameOver = false; // Spelstatus resetten
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Wis het canvas
+    menuScreen.style.display = 'block';  // Скрыть меню
+    gameCanvas.style.display = 'none'; // Показать канвас игры
     showRoleSelection(); // Een rol kiezen voordat je het spel start
 }
 // Functie om het spel te starten
     function startGame() {
         showRoleSelection(); // ChooseRole
+
     }
 
 // Start het spel
