@@ -19,7 +19,6 @@ let npcs = []; // Array voor NPC's
 let isGameOver = false;
 let entities = [player, ...npcs];
 
-
 // Spelinstellingen
 const foodCount = 100; // Aantal voedsel dat gespawnd moet worden
 const npcCount = 10; // Aantal NPC's dat gespawnd moet worden
@@ -99,19 +98,21 @@ function spawnNPCs() {
 }
 function respawnNPC(x, y, delay) {
     setTimeout(function() {
-        const type = Math.random() > 0.5 ? 'carnivore' : 'herbivore'; // Willekeurig NPC-type
-
+        const type = Math.random() > 0.5 ? 'carnivore' : 'herbivore'; // Willekeurig type
         npcs.push({
-            x: x !== undefined ? x : Math.random() * canvas.width,
-            y: y !== undefined ? y : Math.random() * canvas.height,
+            x: Math.random() * canvas.width, // Willekeurige X-positie
+            y: Math.random() * canvas.height, // Willekeurige Y-positie
             size: newNpcSize, // NPC-startgrootte
             speed: npcSpeed, // Snelheid van NPC
+            score: 0, // Initialiseer de score van de NPC
             directionX: Math.random() > 0.5 ? 1 : -1,
             directionY: Math.random() > 0.5 ? 1 : -1,
-            type: type // Generatie van NPC-type
+            type: type, // Generatie van NPC-type
         });
+        console.log("NPC respawned:", npcs.length); // Лог для отладки
     }, delay);
 }
+
 
 // Evolutiesysteem voor de speler
 function checkEvolution() {
